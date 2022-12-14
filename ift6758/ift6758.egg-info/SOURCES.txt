@@ -1,0 +1,9 @@
+setup.py
+ift6758/__init__.py
+ift6758.egg-info/PKG-INFO
+ift6758.egg-info/SOURCES.txt
+ift6758.egg-info/dependency_links.txt
+ift6758.egg-info/top_level.txt
+ift6758/client/__init__.py
+ift6758/client/serving_client.py
+ift6758/data/__init__.py
