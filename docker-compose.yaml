@@ -1,30 +1,33 @@
 # docker-compose.yml
 version: '3'
 
+# docker build -t ift6758/serving:1.0.0 . -f Dockerfile.serving 
+# docker run -p 127.0.0.1:8890:8890/tcp --env COMET_API_KEY="my_secret" -it ift6758/serving:1.0.0
+
 services:
   serving:
     build:
       context: ./
       dockerfile: ./Dockerfile.serving
-#      args:
-#        ARG: <ARG>
-#    image: ift6758/serving:<TAG>
-#    ports:
-#      - <SERVING_PORT>:<SERVING_PORT>
-#    environment:
-#      DOCKER_ENV_VAR = ${LOCAL_ENV_VAR}
-###### Uncomment below when you're ready to add the final notebook container to your docker compose
-##  streamlit:
-##    build:
-##      context: ./
-##      dockerfile: ./Dockerfile.streamlit
-##      args:
-##        ARG: <ARG>
-##    image: ift6758/streamlit:<TAG>
-##    ports:
-##      - <STREAMLIT_PORT>:<STREAMLIT_PORT>
-##    environment:
-##      OTHER_DOCKER_ENV_VAR = ${OTHER_LOCAL_ENV_VAR}
-      
+      # args:
+      #   ARG: <ARG>
+    image: ift6758/serving:0.0.1
+    ports:
+      - 5000:5000
+    environment:
+      COMET_API_KEY: ${COMET_API_KEY}
+##### Uncomment below when you're ready to add the final notebook container to your docker compose
+  # streamlit:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./Dockerfile.streamlit
+  #     args:
+  #       ARG: <ARG>
+  #   image: ift6758/streamlit:<TAG>
+  #   ports:
+  #     - <STREAMLIT_PORT>:<STREAMLIT_PORT>
+  #   environment:
+  #     OTHER_DOCKER_ENV_VAR = ${OTHER_LOCAL_ENV_VAR}
+        
 
-     
+    
