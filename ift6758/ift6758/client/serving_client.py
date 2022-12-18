@@ -2,6 +2,7 @@ import json
 import requests
 import pandas as pd
 import logging
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,15 @@ class ServingClient:
         logger.info(f"Initializing client; base URL: {self.base_url}")
 
         if features is None:
-            features = ["distance"] # 18 features - feature_eng 2 - tidydataset
+            features = [
+                'periodTimeSec', 'period', 'coordinate_x', 'coordinate_y',
+                'distanceFromGoal', 'shotAngle', 'lastEventCoord_x', 'lastEventCoord_y',
+                'timeDifference', 'distanceDifference', 'rebound',
+                'shotAngleDifference', 'speed', 'Backhand', 'Deflected', 'Slap Shot',
+                'Snap Shot', 'Tip-In', 'Wrap-around', 'Wrist Shot', 'BLOCKED_SHOT',
+                'FACEOFF', 'GIVEAWAY', 'GOAL', 'HIT', 'MISSED_SHOT', 'SHOT',
+                'TAKEAWAY', 'PENALTY'
+            ]
         self.features = features
 
         # any other potential initialization
@@ -25,9 +34,12 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
-        pred = requests.post(self.base_url + "/predict", X)
+        if X is not None:
+            pred = requests.post(self.base_url + "/predict", X)
+            return pd.read_json(pred, orient='split')
         
-        return pd.read_json(pred, orient='split')
+        pred = pd.DataFrame(np.nan, index=[0], columns=self.features)
+        return pred
 
     def logs(self) -> dict:
         """Get server logs"""
