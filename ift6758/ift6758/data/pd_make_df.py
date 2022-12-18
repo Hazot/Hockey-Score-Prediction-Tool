@@ -235,7 +235,7 @@ def aug2(df):
         'distanceDifference', 'rebound', 'shotAngleDifference', 'speed'
         ]]
 
-def aug3(df):
+def aug3(df, full_model):
     """
     Added to directly preprocess into XGBoost compatible data.
     Note: individual games don't map out the support of 'shotType' and 'lastEventType'
@@ -266,7 +266,7 @@ def aug3(df):
     
     lastEventType_support = [
         'BLOCKED_SHOT', 'FACEOFF', 'GIVEAWAY',
-       'GOAL', 'HIT', 'MISSED_SHOT', 'SHOT', 
+       'GOAL', 'HIT', 'PENALTY', 'MISSED_SHOT', 'SHOT', 
         'TAKEAWAY']
     
     for col in shotType_support:
@@ -276,5 +276,19 @@ def aug3(df):
     for col in lastEventType_support:
         if col not in df.columns:
             df[col] = 0
+    
+    df = df[['periodTimeSec', 'period', 'coordinate_x', 'coordinate_y',
+       'distanceFromGoal', 'shotAngle', 'lastEventCoord_x', 'lastEventCoord_y',
+       'timeDifference', 'distanceDifference', 'rebound',
+       'shotAngleDifference', 'speed', 'Backhand', 'Deflected', 'Slap Shot',
+       'Snap Shot', 'Tip-In', 'Wrap-around', 'Wrist Shot', 'BLOCKED_SHOT',
+       'FACEOFF', 'GIVEAWAY', 'GOAL', 'HIT', 'MISSED_SHOT', 'PENALTY', 'SHOT',
+       'TAKEAWAY']]
+    
+    if full_model:
+        return df
+    
+    # isGoal should not have been there at any point
     X = df.drop(columns=['isGoal', 'PENALTY', 'lastEventCoord_x'], errors='ignore')
+    
     return X
