@@ -2,21 +2,25 @@
 # You shouldn't need to change this
 FROM python:3.7
 
+# Install codebase and default model
+ADD serving/ /code/
+
 # Create and cd into /code as your working directory
 WORKDIR /code
 
-# Instal codebase and default model
-ADD serving/ /code/
-
 # TODO: install libs
-RUN pip install wheel && \ 
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # TODO: expose ports (or do this in docker-compose)
-ENV SERVING_PORT=5000
-EXPOSE ${SERVING_PORT}
+# ENV SERVING_PORT=5000
+# EXPOSE ${SERVING_PORT}
+EXPOSE 5000
 
 
 # TODO: specify default command - this is not required because you can always specify the command
 # either with the docker run command or in the docker-compose file
-CMD gunicorn --bind 0.0.0.0:${SERVING_PORT} app:app
+CMD ["gunicorn"  , "--bind", "0.0.0.0:5000", "app:app"]
+
+# To build file use: docker build -t ift6758/serving:1.0.0 . -f Dockerfile.serving
+# To run the image use: docker run -d -p 5000:5000 --env COMET_API_KEY="uSCsJDHCChylrC6vWAR235rC5" -it ift6758/serving:1.0.0
+# To run the image use: docker run -p 5000:5000 --env COMET_API_KEY="uSCsJDHCChylrC6vWAR235rC5" -it ift6758/serving:1.0.0
