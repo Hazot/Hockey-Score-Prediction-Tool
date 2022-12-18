@@ -1,7 +1,7 @@
 """
 If you are in the same directory as this file (app.py), you can run run the app using gunicorn:
     
-    $ gunicorn --bind 0.0.0.0:<PORT> app:app
+    $ gunicorn --bind 0.0.0.0:5000 app:app
 
 gunicorn can be installed via:
 
@@ -154,11 +154,11 @@ def predict():
     # Get POST json data
     json = request.get_json()
     app.logger.info("Prediction start")
-    app.logger.info(json)
+    # app.logger.info(json)
     df = pd.read_json(json, orient='split')
     pred = model.predict_proba(df)
     df_pred = pd.DataFrame(pred)
     response = df_pred.to_json(orient='split')
-    app.logger.info(response)
+    # app.logger.info(response)
     app.logger.info("Prediction end")
     return jsonify(response)  # response must be json serializable!
