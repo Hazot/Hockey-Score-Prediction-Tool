@@ -1,21 +1,21 @@
 # You shouldn't need to change this
 FROM python:3.7
 
-# Create and cd into /code as your working directory
-WORKDIR /code
+# # Create and cd into /code as your working directory
+# WORKDIR /code
 
-# TODO: add code, optionally a default model if you want 
-ADD ./ift67589 /code/ift6758/
-ADD ./streamlit /code/streamlit/
+# # TODO: add code, optionally a default model if you want 
+# ADD ./ift67589 /code/ift6758/
+# ADD ./streamlit /code/streamlit/
 
-# TODO: install libs
-RUN pip install wheel && \ 
-    pip install -r streamlit/requirements.txt
+# # TODO: install libs
+# RUN pip install wheel && \ 
+#     pip install -r streamlit/requirements.txt
 
-# TODO: expose ports (or do this in docker-compose)
-ENV STREAMLIT_PORT=8892
-EXPOSE ${STREAMLIT_PORT}
+# # TODO: expose ports (or do this in docker-compose)
+# ENV STREAMLIT_PORT=8892
+# EXPOSE ${STREAMLIT_PORT}
 
-# TODO: specify default command - this is not required because you can always specify the command
-# either with the docker run command or in the docker-compose file
-CMD streamlit run streamlit/app.py --server.port=${STREAMLIT_PORT} --server.address=0.0.0.0
+# # TODO: specify default command - this is not required because you can always specify the command
+# # either with the docker run command or in the docker-compose file
+# CMD streamlit run streamlit/app.py --server.port=${STREAMLIT_PORT} --server.address=0.0.0.0
