@@ -3,9 +3,7 @@ import requests
 import pandas as pd
 import logging
 
-
 logger = logging.getLogger(__name__)
-
 
 class ServingClient:
     def __init__(self, ip: str = "0.0.0.0", port: int = 5000, features=None):
@@ -13,7 +11,7 @@ class ServingClient:
         logger.info(f"Initializing client; base URL: {self.base_url}")
 
         if features is None:
-            features = ["distance"]
+            features = ["distance"] # 18 features - feature_eng 2 - tidydataset
         self.features = features
 
         # any other potential initialization
@@ -27,13 +25,14 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
-
-        raise NotImplementedError("TODO: implement this function")
+        pred = requests.post(self.base_url + "/predict", X)
+        
+        return pd.read_json(pred, orient='split')
 
     def logs(self) -> dict:
         """Get server logs"""
-
-        raise NotImplementedError("TODO: implement this function")
+        d = requests.get(self.base_url+"/logs")
+        return d
 
     def download_registry_model(self, workspace: str, model: str, version: str) -> dict:
         """
@@ -50,5 +49,10 @@ class ServingClient:
             model (str): The model in the Comet ML registry to download
             version (str): The model version to download
         """
-
-        raise NotImplementedError("TODO: implement this function")
+        model_dict = {
+            'workspace': workspace,
+            'model': model,
+            'version': version
+        }
+        r = requests.post(self.base_url + "/download_registry_model", json=model_dict)
+        return r
