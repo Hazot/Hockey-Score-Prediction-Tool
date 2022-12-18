@@ -1,0 +1,6 @@
+pandas
+setuptools
+requests
+flask
+gunicorn
+comet_ml
