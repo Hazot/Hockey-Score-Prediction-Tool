@@ -227,22 +227,30 @@ def full(df):
 def aug1(df):
     return full(df)[['emptyNet', 'distanceFromGoal', 'shotAngle', 'isGoal']]
 
-def aug2(df):
-    return full(df)[[
+def aug2(df, call_full=True):
+    """
+    added call_full to avoid breaking things
+    """
+    colns = [
         'periodTimeSec', 'period', 'coordinate_x', 'coordinate_y', 
         'distanceFromGoal', 'shotAngle', 'shotType', 'lastEventType',
         'lastEventCoord_x', 'lastEventCoord_y', 'timeDifference',
         'distanceDifference', 'rebound', 'shotAngleDifference', 'speed'
-        ]]
+    ]
+    
+    if call_full:
+        return full(df)[colns]
+    else:
+        return df[colns]
 
-def aug3(df):
+def aug3(df, full_model):
     """
     Added to directly preprocess into XGBoost compatible data.
     Note: individual games don't map out the support of 'shotType' and 'lastEventType'
     which means that certain values will not be orthogonalized, and therefore needs to be added 
     manually to cover for the one hot encoder.
     """
-    df = aug2(df)
+    df = aug2(df, call_full=False)
     df = df.dropna().reset_index(drop=True)
 
     enc_style = OneHotEncoder()
@@ -266,7 +274,7 @@ def aug3(df):
     
     lastEventType_support = [
         'BLOCKED_SHOT', 'FACEOFF', 'GIVEAWAY',
-       'GOAL', 'HIT', 'MISSED_SHOT', 'SHOT', 
+       'GOAL', 'HIT', 'PENALTY', 'MISSED_SHOT', 'SHOT', 
         'TAKEAWAY']
     
     for col in shotType_support:
@@ -276,5 +284,19 @@ def aug3(df):
     for col in lastEventType_support:
         if col not in df.columns:
             df[col] = 0
+    
+    df = df[['periodTimeSec', 'period', 'coordinate_x', 'coordinate_y',
+       'distanceFromGoal', 'shotAngle', 'lastEventCoord_x', 'lastEventCoord_y',
+       'timeDifference', 'distanceDifference', 'rebound',
+       'shotAngleDifference', 'speed', 'Backhand', 'Deflected', 'Slap Shot',
+       'Snap Shot', 'Tip-In', 'Wrap-around', 'Wrist Shot', 'BLOCKED_SHOT',
+       'FACEOFF', 'GIVEAWAY', 'GOAL', 'HIT', 'MISSED_SHOT', 'PENALTY', 'SHOT',
+       'TAKEAWAY']]
+    
+    if full_model:
+        return df
+    
+    # isGoal should not have been there at any point
     X = df.drop(columns=['isGoal', 'PENALTY', 'lastEventCoord_x'], errors='ignore')
+    
     return X
