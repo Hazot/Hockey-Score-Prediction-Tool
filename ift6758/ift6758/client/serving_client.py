@@ -34,6 +34,7 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
+        X = X.drop(columns=['team'], errors='ignore')
         X_dict = {}
         X_values = X.values.tolist()
         X_dict['values'] = X_values
