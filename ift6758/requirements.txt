@@ -16,3 +16,4 @@ comet_ml
 jupyterlab
 ipywidgets
 streamlit
+flask-caching

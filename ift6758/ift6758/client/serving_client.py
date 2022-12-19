@@ -35,9 +35,12 @@ class ServingClient:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
         if X is not None:
-            pred = requests.post(self.base_url + "/predict", X)
-            return pd.read_json(pred, orient='split')
-        
+            X_dict = {}
+            X_values = X.values.tolist()
+            X_dict['values'] = X_values
+            pred = requests.post(url=self.base_url + "/predict", json=X_dict)
+            return pd.DataFrame(pred.json())
+
         pred = pd.DataFrame(np.nan, index=[0], columns=self.features)
         return pred
 

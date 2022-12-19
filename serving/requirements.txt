@@ -6,3 +6,4 @@ gunicorn
 comet_ml
 xgboost
 scikit-learn
+flask-caching
