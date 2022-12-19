@@ -34,15 +34,11 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
-        if X is not None:
-            X_dict = {}
-            X_values = X.values.tolist()
-            X_dict['values'] = X_values
-            pred = requests.post(url=self.base_url + "/predict", json=X_dict)
-            return pd.DataFrame(pred.json())
-
-        pred = pd.DataFrame(np.nan, index=[0], columns=self.features)
-        return pred
+        X_dict = {}
+        X_values = X.values.tolist()
+        X_dict['values'] = X_values
+        pred = requests.post(url=self.base_url + "/predict", json=X_dict)
+        return pd.DataFrame(pred.json())
 
     def logs(self) -> dict:
         """Get server logs"""
