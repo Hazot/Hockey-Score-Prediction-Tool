@@ -63,6 +63,9 @@ if 'model_downloaded' not in st.session_state:
 if 'model' not in st.session_state:
     st.session_state['model'] = None
 
+if 'model_selection_change' not in st.session_state:
+    st.session_state['model_selection_change'] = False
+
 #################### FUNCTION DEFINITIONS
 def get_predictions(_x: np.array):
         """
@@ -107,7 +110,10 @@ with st.sidebar:
     version = st.selectbox(label='Model version', options=['1.0.0']) 
 
     model_button = st.button('Get Model')
-    if model_button:
+    if model_button and model == st.session_state.model:
+        st.write(f'Model {model} already downloaded!')
+    
+    elif model_button:
         st.session_state['model_downloaded'] = True 
         st.session_state['model'] = model
         # st.write(st.session_state.servingClient.features)
@@ -118,6 +124,7 @@ with st.sidebar:
     elif not model_button and st.session_state.model_downloaded:
         # st.session_state.servingClient.download_registry_model(workspace, st.session_state.model, version) # Necessary??
         st.write(f'Downloaded model {st.session_state.model}!')
+    
     else:
         st.write('Waiting on **Get Model** button press...')
 
@@ -140,9 +147,11 @@ with st.container():
     # TODO: Add Game info and predictions
     st.subheader(f"Game goal predictions")
     if pred_button and st.session_state.model_downloaded:
-
+        st.write(st.session_state.model)
         #### With Flask/clients:
-        df_MODEL = st.session_state.gameClient.process_query(game_id) # And model name !!!
+        df_MODEL = st.session_state.gameClient.process_query(game_id, st.session_state.model) # And model name !!!
+        st.write(df_MODEL.shape)
+        
         if df_MODEL is not None:
             pred_MODEL = st.session_state.servingClient.predict(df_MODEL)
             df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features)   ## When are the features updated??
