@@ -38,17 +38,13 @@ class ServingClient:
         X_dict = {}
         X_values = X.values.tolist()
         X_dict['values'] = X_values
-        logger.debug('Post Dict Len:' + str(len(X_values)))
         pred = requests.post(url=self.base_url + "/predict", json=X_dict)
-        pred = pd.DataFrame(pred.json())
-        logger.debug('Response DataFrame shape:' + str(pred.shape))
-        return pred
+        return pd.DataFrame(pred.json())
 
     def logs(self) -> dict:
         """Get server logs"""
         d = requests.get(self.base_url+"/logs")
-        logger.debug("Obtained the log response")
-        return json.load(d.json())
+        return d.json()
 
     def download_registry_model(self, workspace: str, model: str, version: str) -> dict:
         """
@@ -71,5 +67,4 @@ class ServingClient:
             'version': version
         }
         r = requests.post(self.base_url + "/download_registry_model", json=model_dict)
-        logger.debug("Obtained response: " + json.dumps(r))
-        return json.load(r.json())
+        return r

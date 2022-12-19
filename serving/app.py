@@ -65,7 +65,6 @@ def before_first_request():
     xgb = xgboost.XGBClassifier()
     xgb.load_model(model_path)
     cache.set('model', xgb)
-    # requests.post('http://0.0.0.0:5000/download_registry_model', json=default_model)
     app.logger.info("Before first request - End")
 
 
