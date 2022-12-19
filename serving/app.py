@@ -136,8 +136,8 @@ def download_registry_model():
             app.logger.info("Model successfully downloaded to: " + model_path)
             response = 'Updated from CometML api.'
         except Exception as e:
-            response = 'Unexpected error while downloading the model.'
-            app.logger.info(e)
+            response = 'Unexpected error while downloading the model: ' + str(e)
+            app.logger.error(e)
             
 
     # Tip: you can implement a "CometMLClient" similar to your App client to abstract all of this
@@ -157,9 +157,9 @@ def predict():
     app.logger.info("Prediction start")
     r = request.get_json()
     df = pd.json_normalize(r, list(r.keys())[0])
-    app.logger.info('Input DataFrame shape:' + str(df.shape))
+    app.logger.debug('Input DataFrame shape:' + str(df.shape))
     preds = cache.get('model').predict_proba(df)[:, 1]
-    app.logger.info('Prediction DataFrame shape:' + str(preds.shape))
+    app.logger.debug('Prediction DataFrame shape:' + str(preds.shape))
     response = preds.tolist()
 
     app.logger.info("Prediction end")
