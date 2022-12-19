@@ -42,7 +42,14 @@ class GameClient:
         self.game_ended = "GAME_END" in df["eventType"].values
         self.last_eventIdx = df.iloc[-1].eventIdx
         
-        returned_df = pd_make_df.aug3(df, full_model)
+        filtered = pd_make_df.full(df).reset_index(drop=True)
+        
+        returned_df = pd_make_df.aug3(filtered, full_model)
+#         returned_df["team"] = filtered["teamTriCode"]
+        returned_df.insert(  # same as the line above but moving team to coln #1
+            loc=0, column="team",
+            value=filtered["teamTriCode"]
+        )
         
         if len(returned_df) == 0: return None
         else: return df if return_raw else returned_df

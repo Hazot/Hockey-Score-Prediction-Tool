@@ -227,13 +227,21 @@ def full(df):
 def aug1(df):
     return full(df)[['emptyNet', 'distanceFromGoal', 'shotAngle', 'isGoal']]
 
-def aug2(df):
-    return full(df)[[
+def aug2(df, call_full=True):
+    """
+    added call_full to avoid breaking things
+    """
+    colns = [
         'periodTimeSec', 'period', 'coordinate_x', 'coordinate_y', 
         'distanceFromGoal', 'shotAngle', 'shotType', 'lastEventType',
         'lastEventCoord_x', 'lastEventCoord_y', 'timeDifference',
         'distanceDifference', 'rebound', 'shotAngleDifference', 'speed'
-        ]]
+    ]
+    
+    if call_full:
+        return full(df)[colns]
+    else:
+        return df[colns]
 
 def aug3(df, full_model):
     """
@@ -242,7 +250,7 @@ def aug3(df, full_model):
     which means that certain values will not be orthogonalized, and therefore needs to be added 
     manually to cover for the one hot encoder.
     """
-    df = aug2(df)
+    df = aug2(df, call_full=False)
     df = df.dropna().reset_index(drop=True)
 
     enc_style = OneHotEncoder()
