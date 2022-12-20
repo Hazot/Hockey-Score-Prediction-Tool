@@ -13,30 +13,8 @@ from ift6758.client.game_client import GameClient
 # """
 
 
-################### (FALSE) NEEDED DATA
+#################### STREAMLIT SESSION STATE OBJECTS
 
-features = ['Feature1', 'Feature2','Feature3','Feature4','Feature5',
-            'Feature6', 'Feature7', 'Feature8', 'Feature9', 'Feature10',
-            'Feature11', 'Feature12', 'Feature13', 'Feature14', 'Feature15',
-            'Feature16', 'Feature17', 'Feature18']
-
-feature_values = np.random.rand(5, 18) 
-model_pred = np.random.rand(5,1)
-
-df = pd.DataFrame(feature_values, columns=features)
-df['Model Output'] = model_pred
-
-
-Teams = ['Team1', 'Team2'] #### How to get info?
-real_goals = [2, 3] #### How to get info?
-
-#################### SESSION STATE
-
-if 'stored_game_id' not in st.session_state:
-    st.session_state['stored_game_id'] = 0
-
-
-# ------------ Real values
 
 if 'gameClient' not in st.session_state:
     gameClient = GameClient()
@@ -58,21 +36,47 @@ if 'model_selection_change' not in st.session_state:
 if 'stored_df' not in st.session_state: 
     st.session_state.stored_df = None
 
-#################### FUNCTION DEFINITIONS
+if 'pred_goals' not in st.session_state:
+    st.session_state.pred_goals = [0,0]
+    
+if 'real_goals' not in st.session_state:
+    st.session_state.real_goals = [0,0]
 
-def calculate_game_goals(df: pd.DataFrame):
+if 'teams' not in st.session_state:
+    st.session_state.teams = None
+
+
+#################### FUNCTION DEFINITION
+
+def calculate_game_goals(df: pd.DataFrame, pred):
     """
     Sum over model_pred for each team 
         Input: df (DataFrame), with feature values and model prediction for every event
         Output: pred_goals (list), predicted number of goals for each team    
     """
-    #### How to sum over a certain team? -> is there a certain 0/1 binary feature?
-    pred_goals = [1.8, 3.4]   
+    pred_goals = [1.8, 3.4] 
+
+    df['Model Output'] = pred
+
+    teams = df['team'].unique()
+
+    pred_team1 = df.loc[df['team']==teams[0] , 'Model Output']
+    sum_pred_team1 = pred_team1.sum()
+    pred_team2 = df.loc[df['team']==teams[1] , 'Model Output']
+    sum_pred_team2 = pred_team2.sum()
+
+    real_team1 = df.loc[df['team']==teams[0] , 'isGoal']
+    sum_real_team1 =real_team1.sum()
+    real_team2 = df.loc[df['team']==teams[1] , 'isGoal']
+    sum_real_team2 = real_team2.sum()
+ 
+    pred_goals = [sum_pred_team1, sum_pred_team2]
+    real_goals = [sum_real_team1, sum_real_team2]
+
+    return pred_goals, real_goals, teams
 
 
-    return pred_goals
-
-
+#################### STREAMLIT APP
 
 IP = os.environ.get("SERVING_IP", "0.0.0.0")
 PORT = os.environ.get("SERVING_PORT", "5000")
@@ -107,7 +111,10 @@ with st.sidebar:
         st.session_state.servingClient.download_registry_model(workspace, st.session_state.model, version)
         st.write(f'Downloaded model:\n **{st.session_state.model}**!')
 
-        st.session_state.stored_df = None # Reinitializing stored dataframe
+        # Reinitialize session state objects if model changes:
+        st.session_state.stored_df = None 
+        st.session_state.real_goals = [0,0]
+        st.session_state.pred_goals = [0,0]
 
     # (If no button click, but page rerun: show previous model)
     elif not model_button and st.session_state.model_downloaded:  
@@ -123,29 +130,30 @@ with st.sidebar:
 with st.container():
     # TODO: Add Game ID input
     game_id = st.text_input(label='Input Game ID:', value='2021020329', max_chars=10, label_visibility='collapsed')
+    
+    # Reinitialize session state objects if game_id changes:
     if game_id != st.session_state.gameClient.gameId: 
         st.session_state.stored_df = None
-
+        st.session_state.real_goals = [0,0]
+        st.session_state.pred_goals = [0,0]
 
     pred_button = st.button('Ping Game')
     if pred_button:
         if st.session_state.model_downloaded == False: 
             st.write('Please download model first!')
         else: 
-            st.write(f'**The current game ID is {game_id}!**') ### Add info on Teams, date of game
+            st.write(f'**The current game ID is {game_id}!**') 
         
 
-
-           
-    
+              
 with st.container():
     # TODO: Add Game info and predictions
+    st.write('STORED DF')
     st.write(st.session_state.stored_df)
 
     st.subheader(f"Game goal predictions")
     if pred_button and st.session_state.model_downloaded:
-        st.write(st.session_state.model)
-        #### With Flask/clients:
+
         df_MODEL = st.session_state.gameClient.process_query(game_id, model_name=st.session_state.model) 
         st.write('DF_MODEL')
         st.write(df_MODEL)
@@ -158,12 +166,20 @@ with st.container():
             
             df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features)   # Features list arent updated
             df['Model Output'] = pred_MODEL
+
+            # Calculate game goal predictions (and actual)
+            pred_goals, real_goals, teams = calculate_game_goals(df_MODEL, pred_MODEL)
+            for i in range(len(teams)):
+                st.session_state.pred_goals[i] += pred_goals[i]
+                st.session_state.real_goals[i] += real_goals[i]
+            st.session_state.teams = teams
+
         else: 
             df = None
-            st.write('AHHHHHHH 2')
+            st.write('Process query dataframe is None!')
         
-        if game_id == st.session_state.gameClient.gameId: # Comparing current and previous gameId
-            st.write(st.session_state.gameClient.gameId)
+        # Comparing current and previous gameId:
+        if game_id == st.session_state.gameClient.gameId: 
             st.write('Concat!')
             df = pd.concat([st.session_state.stored_df, df], ignore_index=True)
             st.session_state.stored_df = df 
@@ -171,19 +187,29 @@ with st.container():
             st.session_state.stored_df = df 
         
 
-        pred_goals_MODEL = calculate_game_goals(df)
+        # Getting Game info:
+        if st.session_state.gameClient.game_ended: 
+            st.write('**Game ended!**')
+        else: 
+            st.write('**Game live!**')
+            last_period = int(st.session_state.stored_df['period'].values[-1:])
+            last_period_time = int(st.session_state.stored_df['periodTimeSec'].values[-1:])
+            st.write(f'**Period: {last_period}, Period time: {last_period_time} sec**')      
 
+
+        # Display Game goal predictions and info:
         col1, col2 = st.columns(2)
-        delta1 = np.round(pred_goals_MODEL[0] - real_goals[0], decimals=1)
-        delta2 = np.round(pred_goals_MODEL[1] - real_goals[1], decimals=1)
-        col1.metric(label=f"{Teams[0]} xG (actual)", value=f"{pred_goals_MODEL[0]} ({real_goals[0]})", delta=delta1)
-        col2.metric(label=f"{Teams[1]} xG (actual)", value=f"{pred_goals_MODEL[1]} ({real_goals[1]})", delta=delta2)
+        pred_goals_round = np.round(st.session_state.pred_goals, decimals=1)
 
+        delta1 = np.round(pred_goals_round[0] - st.session_state.real_goals[0], decimals=1)
+        delta2 = np.round(pred_goals_round[1] - st.session_state.real_goals[1], decimals=1)
+        col1.metric(label=f"**{st.session_state.teams[0]}** xG (actual)", value=f"{pred_goals_round[0]} ({st.session_state.real_goals[0]})", delta=delta1)
+        col2.metric(label=f"**{st.session_state.teams[1]}** xG (actual)", value=f"{pred_goals_round[1]} ({st.session_state.real_goals[1]})", delta=delta2)
 
     else:
         st.write('Waiting on **Ping Game** button press...')
     
-
+    # Display feature values and model predictions per game event:
     st.subheader(f"Goal prediction per game event")
     if pred_button and st.session_state.model_downloaded:
         st.write(st.session_state.stored_df)
@@ -191,7 +217,7 @@ with st.container():
         st.write('Waiting on **Ping Game** button press...')
 
 
-# 0.1302
+
 
 # with st.container():
 #     # TODO: Add data used for predictions
@@ -207,10 +233,10 @@ with st.container():
     # What if previous game_id is one of an ended game 💚
     # What if model change: have to reset stored_df for the same game 💚
 
-# - Game goal predictions (separate the 2 teams)
+# - Game goal predictions (separate the 2 teams) 💚
 
-# - Afficher Period, Time left to Period
-    # Ne pas afficher if game_ended
+# - Afficher Period, Time left to Period 💚
+    # Ne pas afficher if game_ended 💚
 
 
 # Ping game when model isnt downloaded -> Error 💚

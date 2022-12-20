@@ -152,7 +152,7 @@ def create_dataframe_from_game(game_id:str, use_cache=True):
         # 'team.id', 'team.name', 'team.link', 
         'team.triCode',
         'result.secondaryType', # 'result.penaltySeverity', 'result.penaltyMinutes', 
-        'result.strength.code', # 'result.strength.name','result.gameWinningGoal', 
+        # 'result.strength.code', # 'result.strength.name','result.gameWinningGoal', 
         'result.emptyNet'
     ]
     allPlays_columns_map = {
@@ -167,7 +167,7 @@ def create_dataframe_from_game(game_id:str, use_cache=True):
         'coordinates.y'            : "coordinate_y",
         'result.secondaryType'     : "shotType",
         'team.triCode'             : "teamTriCode",
-        'result.strength.code'     : "shotStrength", 
+        # 'result.strength.code'     : "shotStrength", 
         'result.emptyNet'          : "emptyNet"
     }
     
@@ -207,7 +207,7 @@ def create_dataframe_from_game(game_id:str, use_cache=True):
         "coordinate_x", "coordinate_y",
         "shotType",
         "teamTriCode",
-        "shotStrength", 
+        # "shotStrength", 
         "emptyNet",
         "isGoal",
         "rinkSide",
