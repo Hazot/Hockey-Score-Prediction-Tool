@@ -14,17 +14,15 @@ services:
     environment:
       COMET_API_KEY: ${COMET_API_KEY}
 ##### Uncomment below when you're ready to add the final notebook container to your docker compose
-  # streamlit:
-  #   build:
-  #     context: ./
-  #     dockerfile: ./Dockerfile.streamlit
-  #     args:
-  #       ARG: <ARG>
-  #   image: ift6758/streamlit:<TAG>
-  #   ports:
-  #     - 8892:8892
-  #   environment:
-  #     OTHER_DOCKER_ENV_VAR = ${OTHER_LOCAL_ENV_VAR}
-        
-
-    
+  streamlit:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile.streamlit
+      # args:
+      #   ARG: <ARG>
+    image: ift6758/streamlit:0.0.1
+    ports:
+      - 8892:8892
+    environment:
+      SERVING_IP: "serving"
+      SERVING_PORT: 5000

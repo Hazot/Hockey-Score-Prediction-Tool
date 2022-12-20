@@ -12,6 +12,9 @@ from ift6758.client.game_client import GameClient
 # Just make sure that the required functionality is included as well
 # """
 
+IP = os.environ.get("SERVING_IP", "0.0.0.0")
+PORT = os.environ.get("SERVING_PORT", 5000)
+base_url = f"http://{IP}:{PORT}"
 
 #################### STREAMLIT SESSION STATE OBJECTS
 
@@ -21,7 +24,7 @@ if 'gameClient' not in st.session_state:
     st.session_state['gameClient'] = gameClient
 
 if 'servingClient' not in st.session_state:
-    servingClient = ServingClient()
+    servingClient = ServingClient(ip=IP, port=PORT)
     st.session_state['servingClient'] = servingClient
 
 if 'model_downloaded' not in st.session_state:
@@ -77,10 +80,6 @@ def calculate_game_goals(df: pd.DataFrame, pred):
 
 
 #################### STREAMLIT APP
-
-IP = os.environ.get("SERVING_IP", "0.0.0.0")
-PORT = os.environ.get("SERVING_PORT", "5000")
-base_url = f"http://{IP}:{PORT}"
 
 
 st.title("Hockey Visualization App")
