@@ -120,33 +120,18 @@ class GameClient:
         self.game_ended = "GAME_END" in df["eventType"].values
         self.last_eventIdx = df.iloc[-1].eventIdx
         
-        filtered = pd_make_df.full(df).reset_index(drop=True)
+        filtered = pd_make_df.full(df)
         
         returned_df = pd_make_df.aug3(filtered, full_model)
-#         returned_df["team"] = filtered["teamTriCode"]
+        returned_df["team"] = filtered["teamTriCode"]
+        
+        team_col = returned_df.pop("team")
+        
         returned_df.insert(  # same as the line above but moving team to coln #1
             loc=0, column="team",
-            value=filtered["teamTriCode"]
+            value=team_col
         )
         self.gameId = gameId
         if len(returned_df) == 0: return None
         else: return df if return_raw else returned_df
 
-if __name__ == "__main__":
-    
-    # STREAMLIT APPLICATION
-    game = GameClient()
-    game.live_game()
-    
-    from ift6758.client.serving_client import ServingClient
-    serv = ServingClient()
-    
-    currentGameID = 2021020329 # fetched from streamlit user input
-    if game.gameID != currentGameID:
-        game = GameClient(currentGameID)
-    
-    X = game.feature_extract()
-    
-    output = serv.predict(X)
-    
-    serv.features

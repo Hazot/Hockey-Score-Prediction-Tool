@@ -252,22 +252,8 @@ def aug3(df, full_model):
     manually to cover for the one hot encoder.
     """
     df = aug2(df, call_full=False)
-    df = df.dropna().reset_index(drop=True)
+    df = df.dropna()#.reset_index()
 
-    enc_style = OneHotEncoder()
-    
-    #shotType
-    enc_results = enc_style.fit_transform(df[["shotType"]])
-    enc_df = pd.DataFrame(enc_results.toarray(), columns=enc_style.categories_[0])
-    df = df.join(enc_df).drop(columns="shotType", errors="ignore")
-    
-    # lastEventType
-    enc_results = enc_style.fit_transform(df[["lastEventType"]])
-    enc_df = pd.DataFrame(enc_results.toarray(), columns=enc_style.categories_[0])
-    df = df.join(enc_df).drop(columns='lastEventType', errors='ignore')
-
-    df["rebound"] = df["rebound"].astype(int)
-    
     shotType_support = [
         'Backhand', 'Deflected', 'Slap Shot', 
         'Snap Shot', 'Tip-In', 'Wrap-around', 
@@ -278,13 +264,25 @@ def aug3(df, full_model):
        'GOAL', 'HIT', 'PENALTY', 'MISSED_SHOT', 'SHOT', 
         'TAKEAWAY']
     
-    for col in shotType_support:
-        if col not in df.columns:
-            df[col] = 0
+    shotEnc = OneHotEncoder(handle_unknown='ignore')
+    eventEnc =OneHotEncoder(handle_unknown='ignore')
     
-    for col in lastEventType_support:
-        if col not in df.columns:
-            df[col] = 0
+    shotEnc.fit([[i] for i in shotType_support])
+    eventEnc.fit([[i] for i in lastEventType_support])
+
+    shot_df = pd.DataFrame(
+        shotEnc.transform(df[["shotType"]].values).toarray(), 
+        columns=shotEnc.categories_[0], index=df.index
+    )
+    event_df = pd.DataFrame(
+        eventEnc.transform(df[["lastEventType"]].values).toarray(), 
+        columns=eventEnc.categories_[0], index=df.index
+    )
+
+    df["rebound"] = df["rebound"].astype(int)
+    
+    df = pd.concat([df, shot_df, event_df], axis=1)
+    df = df.drop(["shotType", "lastEventType"], axis=1)
     
     df = df[['isGoal', 'periodTimeSec', 'period', 'coordinate_x', 'coordinate_y',
        'distanceFromGoal', 'shotAngle', 'lastEventCoord_x', 'lastEventCoord_y',
