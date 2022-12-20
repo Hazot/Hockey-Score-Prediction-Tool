@@ -32,17 +32,6 @@ real_goals = [2, 3] #### How to get info?
 
 #################### SESSION STATE
 
-# class Test:
-#     def __init__(self): 
-#         self.gameId = 0
-
-#     def change_gameId(self, new_gameId): 
-#         self.gameId = new_gameId
-
-# exTest = Test()
-# if 'exTest' not in st.session_state:
-#     st.session_state['exTest'] = exTest
-
 if 'stored_game_id' not in st.session_state:
     st.session_state['stored_game_id'] = 0
 
@@ -66,19 +55,10 @@ if 'model' not in st.session_state:
 if 'model_selection_change' not in st.session_state:
     st.session_state['model_selection_change'] = False
 
-#################### FUNCTION DEFINITIONS
-def get_predictions(_x: np.array):
-        """
-        Get model predictions for a particular game 
-            Input: game_id (string???)
-            Returns: df (DataFrame), with feature values and model prediction for every event
-        """
-        feature_values = np.random.rand(5, 18) 
-        model_pred = np.random.rand(5,1)
-        df = pd.DataFrame(feature_values, columns=features)
-        df['Model Output'] = model_pred      
-        return df
+if 'stored_df' not in st.session_state: 
+    st.session_state.stored_df = None
 
+#################### FUNCTION DEFINITIONS
 
 def calculate_game_goals(df: pd.DataFrame):
     """
@@ -93,7 +73,7 @@ def calculate_game_goals(df: pd.DataFrame):
 
 
 IP = os.environ.get("SERVING_IP", "0.0.0.0")
-PORT = os.environ.get("SERVING_PORT", "8890")
+PORT = os.environ.get("SERVING_PORT", "5000")
 base_url = f"http://{IP}:{PORT}"
 
 
@@ -110,23 +90,28 @@ with st.sidebar:
     version = st.selectbox(label='Model version', options=['1.0.0']) 
 
     model_button = st.button('Get Model')
+
     if model_button and model == st.session_state.model:
         st.write(f'Model {model} already downloaded!')
     
-    elif model_button:
+    elif model_button: # and model != st.session_state.model:
         st.session_state['model_downloaded'] = True 
         st.session_state['model'] = model
-        # st.write(st.session_state.servingClient.features)
+        st.write(st.session_state.servingClient)
+        st.write(st.session_state.model)
+
         st.session_state.servingClient.download_registry_model(workspace, st.session_state.model, version)
         st.write(f'Downloaded model {st.session_state.model}!')
-        if 'stored_df' in st.session_state: 
-            st.session_state.stored_df = None
+
+        st.session_state.stored_df = None # Reinitializing stored dataframe
+
     elif not model_button and st.session_state.model_downloaded:
-        # st.session_state.servingClient.download_registry_model(workspace, st.session_state.model, version) # Necessary??
         st.write(f'Downloaded model {st.session_state.model}!')
     
     else:
         st.write('Waiting on **Get Model** button press...')
+
+    
 
 
 with st.container():
@@ -145,46 +130,29 @@ with st.container():
     
 with st.container():
     # TODO: Add Game info and predictions
+    st.write(st.session_state.stored_df)
+    st.write(st.session_state.servingClient.features)
     st.subheader(f"Game goal predictions")
     if pred_button and st.session_state.model_downloaded:
         st.write(st.session_state.model)
         #### With Flask/clients:
-        df_MODEL = st.session_state.gameClient.process_query(game_id, st.session_state.model) # And model name !!!
-        st.write(df_MODEL.shape)
-        
+        df_MODEL = st.session_state.gameClient.process_query(game_id, model_name=st.session_state.model) 
+        # st.write(df_MODEL.shape)
+
         if df_MODEL is not None:
             pred_MODEL = st.session_state.servingClient.predict(df_MODEL)
-            df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features)   ## When are the features updated??
+            df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features)   # Features list arent updated
             df['Model Output'] = pred_MODEL
         else: 
             df = None
         
-        if 'stored_df' not in st.session_state: 
+        if game_id == st.session_state.gameClient.gameId: # Comparing current and previous gameId
+            df = pd.concat([st.session_state.stored_df, df], ignore_index=True)
             st.session_state.stored_df = df 
         else: 
-            if game_id == st.session_state.gameClient.gameId: # Comparing current and previous gameId
-                df = pd.concat([st.session_state.stored_df, df], ignore_index=True)
-                st.session_state.stored_df = df 
-            else: 
-                st.session_state.stored_df = df 
-        st.session_state.gameClient.gameId = game_id 
+            st.session_state.stored_df = df 
+        
 
-        #### Without Flask/Clients
-        # df = get_predictions(game_id)
-        # pred_goals_MODEL = calculate_game_goals(df)
-        # if 'stored_df' not in st.session_state:
-        #     st.session_state.stored_df = df 
-        # if game_id == st.session_state.stored_game_id: # Comparing current and previous gameId
-        #     df = pd.concat([st.session_state.stored_df, df], ignore_index=True) # What if same ENDED game??
-        #     st.write('Double!')
-        #     st.session_state.stored_df = df 
-        # else: 
-        #     st.session_state.stored_df = df 
-        # st.session_state.stored_game_id = game_id 
-
-
-        # df_team['Model output'] = df['Model output']
-        # calculate_game_goals(df_team)
         pred_goals_MODEL = calculate_game_goals(df)
 
         col1, col2 = st.columns(2)
@@ -224,10 +192,6 @@ with st.container():
 # - Afficher Period, Time left to Period
     # Ne pas afficher if game_ended
 
-# - st.session_state.servingClient.features -> Quand update, par qui?
 
 # Ping game when model isnt downloaded -> Error 💚
-
-
-
 
