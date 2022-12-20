@@ -67,7 +67,9 @@ def calculate_game_goals(df: pd.DataFrame):
         Output: pred_goals (list), predicted number of goals for each team    
     """
     #### How to sum over a certain team? -> is there a certain 0/1 binary feature?
-    pred_goals = [1.8, 3.4]
+    pred_goals = [1.8, 3.4]   
+
+
     return pred_goals
 
 
@@ -90,25 +92,29 @@ with st.sidebar:
     version = st.selectbox(label='Model version', options=['1.0.0']) 
 
     model_button = st.button('Get Model')
-
-    if model_button and model == st.session_state.model:
+    
+    # (If button click and no model change)
+    if model_button and model == st.session_state.model: 
         st.write(f'Model {model} already downloaded!')
     
-    elif model_button: # and model != st.session_state.model:
+    # (If button click and model change)
+    elif model_button: # and model != st.session_state.model: 
         st.session_state['model_downloaded'] = True 
         st.session_state['model'] = model
         st.write(st.session_state.servingClient)
         st.write(st.session_state.model)
 
         st.session_state.servingClient.download_registry_model(workspace, st.session_state.model, version)
-        st.write(f'Downloaded model {st.session_state.model}!')
+        st.write(f'Downloaded model:\n **{st.session_state.model}**!')
 
         st.session_state.stored_df = None # Reinitializing stored dataframe
 
-    elif not model_button and st.session_state.model_downloaded:
-        st.write(f'Downloaded model {st.session_state.model}!')
+    # (If no button click, but page rerun: show previous model)
+    elif not model_button and st.session_state.model_downloaded:  
+        st.write(f'Downloaded model:\n **{st.session_state.model}**!')
     
-    else:
+    # (If no button click, and no previous downloaded model)
+    else: 
         st.write('Waiting on **Get Model** button press...')
 
     
@@ -117,6 +123,9 @@ with st.sidebar:
 with st.container():
     # TODO: Add Game ID input
     game_id = st.text_input(label='Input Game ID:', value='2021020329', max_chars=10, label_visibility='collapsed')
+    if game_id != st.session_state.gameClient.gameId: 
+        st.session_state.stored_df = None
+
 
     pred_button = st.button('Ping Game')
     if pred_button:
@@ -124,6 +133,7 @@ with st.container():
             st.write('Please download model first!')
         else: 
             st.write(f'**The current game ID is {game_id}!**') ### Add info on Teams, date of game
+        
 
 
            
@@ -131,22 +141,30 @@ with st.container():
 with st.container():
     # TODO: Add Game info and predictions
     st.write(st.session_state.stored_df)
-    st.write(st.session_state.servingClient.features)
+
     st.subheader(f"Game goal predictions")
     if pred_button and st.session_state.model_downloaded:
         st.write(st.session_state.model)
         #### With Flask/clients:
         df_MODEL = st.session_state.gameClient.process_query(game_id, model_name=st.session_state.model) 
-        # st.write(df_MODEL.shape)
+        st.write('DF_MODEL')
+        st.write(df_MODEL)
+        
 
         if df_MODEL is not None:
             pred_MODEL = st.session_state.servingClient.predict(df_MODEL)
+            st.write('PRED_MODEL')
+            st.write(pred_MODEL)
+            
             df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features)   # Features list arent updated
             df['Model Output'] = pred_MODEL
         else: 
             df = None
+            st.write('AHHHHHHH 2')
         
         if game_id == st.session_state.gameClient.gameId: # Comparing current and previous gameId
+            st.write(st.session_state.gameClient.gameId)
+            st.write('Concat!')
             df = pd.concat([st.session_state.stored_df, df], ignore_index=True)
             st.session_state.stored_df = df 
         else: 
@@ -172,6 +190,8 @@ with st.container():
     else:
         st.write('Waiting on **Ping Game** button press...')
 
+
+# 0.1302
 
 # with st.container():
 #     # TODO: Add data used for predictions
