@@ -235,7 +235,8 @@ def aug2(df, call_full=True):
         'periodTimeSec', 'period', 'coordinate_x', 'coordinate_y', 
         'distanceFromGoal', 'shotAngle', 'shotType', 'lastEventType',
         'lastEventCoord_x', 'lastEventCoord_y', 'timeDifference',
-        'distanceDifference', 'rebound', 'shotAngleDifference', 'speed'
+        'distanceDifference', 'rebound', 'shotAngleDifference', 'speed',
+        'isGoal'
     ]
     
     if call_full:
@@ -285,7 +286,7 @@ def aug3(df, full_model):
         if col not in df.columns:
             df[col] = 0
     
-    df = df[['periodTimeSec', 'period', 'coordinate_x', 'coordinate_y',
+    df = df[['isGoal', 'periodTimeSec', 'period', 'coordinate_x', 'coordinate_y',
        'distanceFromGoal', 'shotAngle', 'lastEventCoord_x', 'lastEventCoord_y',
        'timeDifference', 'distanceDifference', 'rebound',
        'shotAngleDifference', 'speed', 'Backhand', 'Deflected', 'Slap Shot',
@@ -297,6 +298,6 @@ def aug3(df, full_model):
         return df
     
     # isGoal should not have been there at any point
-    X = df.drop(columns=['isGoal', 'PENALTY', 'lastEventCoord_x'], errors='ignore')
+    X = df.drop(columns=['PENALTY', 'lastEventCoord_x'], errors='ignore')
     
     return X
