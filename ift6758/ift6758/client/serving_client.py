@@ -33,7 +33,9 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
+        logger.info("Pinging game")
         if X is not None:
+            logger.info(f"Input DataFrame shape: {X.shape}" )
             X = X.drop(columns=['isGoal', 'team'], errors='ignore')
             X_dict = {}
             X_values = X.values.tolist()
@@ -41,19 +43,21 @@ class ServingClient:
             pred = requests.post(url=self.base_url + "/predict", json=X_dict)
             try:
                 output = pred.json()
+                logger.info('Response DataFrame length: ' + str(len(output)))
                 return pd.DataFrame(output)
             except Exception as e:
-                logger.info("Error in predictino output: probably not the right input features for the model.")
-                logger.error(e)
+                logger.info("Error in prediction output: probably not the right input features for the model.")
+                logger.info(str(e))
                 return pd.DataFrame([0])
-        else:
-            logger.info("Tried to do prediction on None input.")
-            logger.info("x  Returned output is None.")
-            return None
+        
+        logger.info("Tried to do prediction on None input.")
+        logger.info("Returned output is None.")
+        return None
 
     def logs(self) -> dict:
         """Get server logs"""
         response = requests.get(self.base_url+"/logs")
+        logger.info("Accessing logs")
         return response.json()
 
     def download_registry_model(self, workspace: str, model: str, version: str) -> dict:
@@ -71,10 +75,13 @@ class ServingClient:
             model (str): The model in the Comet ML registry to download
             version (str): The model version to download
         """
+        logger.info("Getting model.")
         model_dict = {
             'workspace': workspace,
             'model': model,
             'version': version
         }
+        logger.info(f"Downloading the following model: {model_dict}")
         response = requests.post(self.base_url + "/download_registry_model", json=model_dict)
+        logger.info(response.text)
         return response
