@@ -41,7 +41,7 @@ class ServingClient:
             pred = requests.post(url=self.base_url + "/predict", json=X_dict)
             try:
                 output = pred.json()
-                return output
+                return pd.DataFrame(output)
             except Exception as e:
                 logger.info("Error in predictino output: probably not the right input features for the model.")
                 logger.error(e)
