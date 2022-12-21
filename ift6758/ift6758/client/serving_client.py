@@ -23,7 +23,6 @@ class ServingClient:
             ]
         self.features = features
 
-        # any other potential initialization
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -34,17 +33,28 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
-        X = X.drop(columns=['isGoal', 'team'], errors='ignore')
-        X_dict = {}
-        X_values = X.values.tolist()
-        X_dict['values'] = X_values
-        pred = requests.post(url=self.base_url + "/predict", json=X_dict)
-        return pd.DataFrame(pred.json())
+        if X is not None:
+            X = X.drop(columns=['isGoal', 'team'], errors='ignore')
+            X_dict = {}
+            X_values = X.values.tolist()
+            X_dict['values'] = X_values
+            pred = requests.post(url=self.base_url + "/predict", json=X_dict)
+            try:
+                output = pred.json()
+                return output
+            except Exception as e:
+                logger.info("Error in predictino output: probably not the right input features for the model.")
+                logger.error(e)
+                return pd.DataFrame([0])
+        else:
+            logger.info("Tried to do prediction on None input.")
+            logger.info("x  Returned output is None.")
+            return None
 
     def logs(self) -> dict:
         """Get server logs"""
-        d = requests.get(self.base_url+"/logs")
-        return d.json()
+        response = requests.get(self.base_url+"/logs")
+        return response.json()
 
     def download_registry_model(self, workspace: str, model: str, version: str) -> dict:
         """
@@ -66,5 +76,5 @@ class ServingClient:
             'model': model,
             'version': version
         }
-        r = requests.post(self.base_url + "/download_registry_model", json=model_dict)
-        return r
+        response = requests.post(self.base_url + "/download_registry_model", json=model_dict)
+        return response
