@@ -57,13 +57,19 @@ if 'teams' not in st.session_state:
 
 #################### FUNCTION DEFINITION
 
-def calculate_game_goals(df: pd.DataFrame, pred):
+def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame):
     """
     Sum over model_pred for each team 
-        Input: df (DataFrame), with feature values and model prediction for every event
-        Output: pred_goals (list), predicted number of goals for each team    
+        Input: 
+            df (DataFrame), with feature values 
+            pred (DataFrame), model prediction for every event
+        Output: 
+            pred_goals (list), predicted number of goals for each team
+            real_goals (list), real number of goals for each team
+            teams (list), abbreviation for each team
+
     """
-    pred_goals = [1.8, 3.4] 
+    df = df.reset_index(drop=True)
 
     df['Model Output'] = pred
 
@@ -170,6 +176,7 @@ with st.container():
             st.write(pred_MODEL)
             
             df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features)   # Features list arent updated
+            df = df.reset_index(drop=True)
             df['Model Output'] = pred_MODEL
 
             # Calculate game goal predictions (and actual)
