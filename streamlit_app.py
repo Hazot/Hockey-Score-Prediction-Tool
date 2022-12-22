@@ -200,13 +200,9 @@ with st.container():
             df['Model Output'] = pred_MODEL
 
             # Calculate game goal predictions (and actual)
-            real_goals, teams_A_H = st.session_state.gameClient.get_real_goals()
-
+            real_goals, teams_A_H = st.session_state.gameClient.get_scores()
             pred_goals = calculate_game_goals(df_MODEL, pred_MODEL, teams_A_H) ### !!!
-            # st.write(teams)
-            
-            # pred_goals = map_teams(teams, teams_A_H, pred_goals)
-
+             
             for i in range(len(teams_A_H)):
                 st.session_state.pred_goals[i] += pred_goals[i]
                 st.session_state.real_goals[i] = real_goals[i] 
@@ -230,10 +226,11 @@ with st.container():
             st.write('**Game ended!**')
         else: 
             st.write('**Game live!**')
-            last_period = int(st.session_state.stored_df['period'].values[-1:])
-            last_period_sec = int(st.session_state.stored_df['periodTimeSec'].values[-1:])
-            last_period_time = last_period_sec
-            st.write(f'**Period: {last_period}, Period time: {last_period_time} sec**')      
+            # last_period = int(st.session_state.stored_df['period'].values[-1:])
+            # last_period_sec = int(st.session_state.stored_df['periodTimeSec'].values[-1:])
+            # last_period_time = last_period_sec
+            period, periodTimeRemaining = st.session_state.gameClient.get_period_info()
+            st.write(f'**Period: {period}, Period time remaining: {periodTimeRemaining} sec**')      
 
 
         # Display Game goal predictions and info:

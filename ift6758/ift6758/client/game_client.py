@@ -33,7 +33,7 @@ class GameClient:
 
         if self.model_name != model_name: self.gameId = 0
         self.model_name = model_name
-        
+
         # game has already been fully processed
         if self.gameId == gameId and self.game_ended: return None 
         
@@ -65,11 +65,20 @@ class GameClient:
     
 
 
-    def get_real_goals(self):
+    def get_scores(self):
         """
         Get number of real goals from live feed dict (raw data)
         """
         helper = FetchData()
-        real_goals = helper.get_scores(self.gameId)        
-        return real_goals
+        return helper.get_scores(self.gameId)
+
+
+    def get_period_info(self):
+        """
+        Get period and periodRemainingTime of last event
+        """
+        helper = FetchData()
+        return helper.get_period_info(self.gameId)
+
+        
 

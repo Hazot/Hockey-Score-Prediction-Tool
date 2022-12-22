@@ -213,9 +213,21 @@ class FetchData:
         home = data["gameData"]["teams"]["home"]["triCode"]
 
         real_goals = [goal_a, goal_h]
-        teams = [away, home]    
+        teams = [away, home]  
 
         return real_goals, teams
+
+
+    def get_period_info(self, game_id: str):
+        game_year = int(str(game_id)[:4])
+        use_cache = True if game_year < 2022 else False
+        data = self.get_play_by_play(game_id, use_cache=use_cache)
+
+        # Get Period and PeriodTimeRemaining
+        period = data["liveData"]["plays"]["currentPlay"]["about"]["period"]
+        periodTimeRemaining = data["liveData"]["plays"]["currentPlay"]["about"]["periodTimeRemaining"] 
+
+        return period, periodTimeRemaining
 
 
 
