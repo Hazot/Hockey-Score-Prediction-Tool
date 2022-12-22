@@ -8,6 +8,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import os
+import time
 
 from ift6758.client.serving_client import ServingClient
 from ift6758.client.game_client import GameClient
@@ -57,12 +58,13 @@ if 'teams' not in st.session_state:
 
 #################### FUNCTION DEFINITION
 
-def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame):
+def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame, teams_A_H: list):
     """
     Sum over model_pred for each team 
         Input: 
             df (DataFrame), with feature values 
             pred (DataFrame), model prediction for every event
+            teams_A_H (list), teams tricode
         Output: 
             pred_goals (list), predicted number of goals for each team
             teams (list), abbreviation for each team
@@ -72,11 +74,11 @@ def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame):
 
     df['Model Output'] = pred
 
-    teams = df['team'].unique()
+    # teams = df['team'].unique()
 
-    pred_team1 = df.loc[df['team']==teams[0] , 'Model Output']
+    pred_team1 = df.loc[df['team']==teams_A_H[0] , 'Model Output']
     sum_pred_team1 = pred_team1.sum()
-    pred_team2 = df.loc[df['team']==teams[1] , 'Model Output']
+    pred_team2 = df.loc[df['team']==teams_A_H[1] , 'Model Output']
     sum_pred_team2 = pred_team2.sum()
 
     # real_team1 = df.loc[df['team']==teams[0] , 'isGoal']
@@ -87,26 +89,26 @@ def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame):
     pred_goals = [sum_pred_team1, sum_pred_team2]
     # real_goals = [sum_real_team1, sum_real_team2]
 
-    return pred_goals, teams
+    return pred_goals
 
 
-def map_teams(teams: list, teams_A_H: list, pred: list):
+# def map_teams(teams: list, teams_A_H: list, pred: list):
     
-    if teams[0] == teams_A_H[0]:
-        a = 0 # Already correctly mapped, 1st team is away team
-    else: 
-        a = 1
+#     if teams[0] == teams_A_H[0]:
+#         a = 0 # Already correctly mapped, 1st team is away team
+#     else: 
+#         a = 1
     
-    # Map predictions:
-    if a == 0:
-        pred_a = pred[0]
-        pred_h = pred[1]
-    else: 
-        pred_a = pred[1]
-        pred_h = pred[0]
+#     # Map predictions:
+#     if a == 0:
+#         pred_a = pred[0]
+#         pred_h = pred[1]
+#     else: 
+#         pred_a = pred[1]
+#         pred_h = pred[0]
         
-    pred_mapped = [pred_a, pred_h]
-    return pred_mapped
+#     pred_mapped = [pred_a, pred_h]
+#     return pred_mapped
 
 
 #################### STREAMLIT APP
@@ -198,12 +200,16 @@ with st.container():
             df['Model Output'] = pred_MODEL
 
             # Calculate game goal predictions (and actual)
-            pred_goals, teams = calculate_game_goals(df_MODEL, pred_MODEL)
             real_goals, teams_A_H = st.session_state.gameClient.get_real_goals()
-            pred_goals = map_teams(teams, teams_A_H, pred_goals)
-            for i in range(len(teams)):
+
+            pred_goals = calculate_game_goals(df_MODEL, pred_MODEL, teams_A_H) ### !!!
+            # st.write(teams)
+            
+            # pred_goals = map_teams(teams, teams_A_H, pred_goals)
+
+            for i in range(len(teams_A_H)):
                 st.session_state.pred_goals[i] += pred_goals[i]
-                st.session_state.real_goals[i] = real_goals[i] #### !!!!
+                st.session_state.real_goals[i] = real_goals[i] 
             st.session_state.teams = teams_A_H
 
         else: 
@@ -225,7 +231,8 @@ with st.container():
         else: 
             st.write('**Game live!**')
             last_period = int(st.session_state.stored_df['period'].values[-1:])
-            last_period_time = int(st.session_state.stored_df['periodTimeSec'].values[-1:])
+            last_period_sec = int(st.session_state.stored_df['periodTimeSec'].values[-1:])
+            last_period_time = last_period_sec
             st.write(f'**Period: {last_period}, Period time: {last_period_time} sec**')      
 
 

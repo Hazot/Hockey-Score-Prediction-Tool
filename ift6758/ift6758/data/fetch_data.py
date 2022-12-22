@@ -188,10 +188,13 @@ class FetchData:
         print('Download finished!')
     
 
-    def get_scores(self, game_id: str, use_cache=True):
+    def get_scores(self, game_id: str):
         """
         Get number of real goals from live feed dict (raw data)
         """
+        game_year = int(str(game_id)[:4])
+        use_cache = True if game_year < 2022 else False
+
         data = self.get_play_by_play(game_id, use_cache=use_cache)
         goal_a = None # away team
         goal_h = None # home team

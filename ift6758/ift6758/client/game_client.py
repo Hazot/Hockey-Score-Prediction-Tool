@@ -30,8 +30,10 @@ class GameClient:
         
         game_year = int(str(gameId)[:4])
         use_cache = True if game_year < 2022 else False
+
         if self.model_name != model_name: self.gameId = 0
         self.model_name = model_name
+        
         # game has already been fully processed
         if self.gameId == gameId and self.game_ended: return None 
         
