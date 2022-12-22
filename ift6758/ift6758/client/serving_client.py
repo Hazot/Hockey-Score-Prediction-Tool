@@ -23,7 +23,6 @@ class ServingClient:
             ]
         self.features = features
 
-        # any other potential initialization
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
         """
@@ -34,17 +33,32 @@ class ServingClient:
         Args:
             X (Dataframe): Input dataframe to submit to the prediction service.
         """
-        X = X.drop(columns=['isGoal', 'team'], errors='ignore')
-        X_dict = {}
-        X_values = X.values.tolist()
-        X_dict['values'] = X_values
-        pred = requests.post(url=self.base_url + "/predict", json=X_dict)
-        return pd.DataFrame(pred.json())
+        logger.info("Pinging game")
+        if X is not None:
+            logger.info(f"Input DataFrame shape: {X.shape}" )
+            X = X.drop(columns=['isGoal', 'team'], errors='ignore')
+            X_dict = {}
+            X_values = X.values.tolist()
+            X_dict['values'] = X_values
+            pred = requests.post(url=self.base_url + "/predict", json=X_dict)
+            try:
+                output = pred.json()
+                logger.info('Response DataFrame length: ' + str(len(output)))
+                return pd.DataFrame(output)
+            except Exception as e:
+                logger.info("Error in prediction output: probably not the right input features for the model.")
+                logger.info(str(e))
+                return pd.DataFrame([0])
+        
+        logger.info("Tried to do prediction on None input.")
+        logger.info("Returned output is None.")
+        return None
 
     def logs(self) -> dict:
         """Get server logs"""
-        d = requests.get(self.base_url+"/logs")
-        return d.json()
+        response = requests.get(self.base_url+"/logs")
+        logger.info("Accessing logs")
+        return response.json()
 
     def download_registry_model(self, workspace: str, model: str, version: str) -> dict:
         """
@@ -61,10 +75,13 @@ class ServingClient:
             model (str): The model in the Comet ML registry to download
             version (str): The model version to download
         """
+        logger.info("Getting model.")
         model_dict = {
             'workspace': workspace,
             'model': model,
             'version': version
         }
-        r = requests.post(self.base_url + "/download_registry_model", json=model_dict)
-        return r
+        logger.info(f"Downloading the following model: {model_dict}")
+        response = requests.post(self.base_url + "/download_registry_model", json=model_dict)
+        logger.info(response.text)
+        return response

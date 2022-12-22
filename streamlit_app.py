@@ -1,3 +1,9 @@
+"""
+If you are in the same directory as this file (streamlit_app.py), you can run run the app using gunicorn:
+    
+    $ streamlit run streamlit_app.py --server.port=8892 --server.address=0.0.0.0
+
+"""
 import streamlit as st
 import pandas as pd
 import numpy as np
