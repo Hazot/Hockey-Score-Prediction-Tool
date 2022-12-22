@@ -186,6 +186,34 @@ class FetchData:
                 self.get_play_by_play(game_id, path, return_data)
     
         print('Download finished!')
+    
+
+    def get_scores(self, game_id: str, use_cache=True):
+        """
+        Get number of real goals from live feed dict (raw data)
+        """
+        data = self.get_play_by_play(game_id, use_cache=use_cache)
+        goal_a = None # away team
+        goal_h = None # home team
+        
+        if data["liveData"].get("linescore") is not None:
+            goal_a = data["liveData"]["linescore"]["teams"]["away"]["goals"]
+            goal_h = data["liveData"]["linescore"]["teams"]["home"]["goals"]
+        
+        # Bug while trying to get number of goals from linescore
+        if goal_a is None and goal_h is None: 
+            goal_a = data["liveData"]["plays"]["currentPlay"]["about"]["goals"]["away"]
+            goal_h = data["liveData"]["plays"]["currentPlay"]["about"]["goals"]["home"]
+
+        # Get away and home teams tricode
+        away = data["gameData"]["teams"]["away"]["triCode"]
+        home = data["gameData"]["teams"]["home"]["triCode"]
+
+        real_goals = [goal_a, goal_h]
+        teams = [away, home]    
+
+        return real_goals, teams
+
 
 
 if __name__ == "__main__":
@@ -194,7 +222,8 @@ if __name__ == "__main__":
     regular_season_games = fetch.game_ids_regular(2017)
     playoffs_games = fetch.game_ids_playoff(2017)
     data = fetch.get_play_by_play(regular_season_games[0])
-    print(data)
+    print(type(data))
+    # print(data)
     for game_id in regular_season_games:
         data = fetch.get_play_by_play(game_id)
     for game_id in playoffs_games:

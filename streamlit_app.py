@@ -65,7 +65,6 @@ def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame):
             pred (DataFrame), model prediction for every event
         Output: 
             pred_goals (list), predicted number of goals for each team
-            real_goals (list), real number of goals for each team
             teams (list), abbreviation for each team
 
     """
@@ -80,15 +79,34 @@ def calculate_game_goals(df: pd.DataFrame, pred: pd.DataFrame):
     pred_team2 = df.loc[df['team']==teams[1] , 'Model Output']
     sum_pred_team2 = pred_team2.sum()
 
-    real_team1 = df.loc[df['team']==teams[0] , 'isGoal']
-    sum_real_team1 =real_team1.sum()
-    real_team2 = df.loc[df['team']==teams[1] , 'isGoal']
-    sum_real_team2 = real_team2.sum()
+    # real_team1 = df.loc[df['team']==teams[0] , 'isGoal']
+    # sum_real_team1 =real_team1.sum()
+    # real_team2 = df.loc[df['team']==teams[1] , 'isGoal']
+    # sum_real_team2 = real_team2.sum()
  
     pred_goals = [sum_pred_team1, sum_pred_team2]
-    real_goals = [sum_real_team1, sum_real_team2]
+    # real_goals = [sum_real_team1, sum_real_team2]
 
-    return pred_goals, real_goals, teams
+    return pred_goals, teams
+
+
+def map_teams(teams: list, teams_A_H: list, pred: list):
+    
+    if teams[0] == teams_A_H[0]:
+        a = 0 # Already correctly mapped, 1st team is away team
+    else: 
+        a = 1
+    
+    # Map predictions:
+    if a == 0:
+        pred_a = pred[0]
+        pred_h = pred[1]
+    else: 
+        pred_a = pred[1]
+        pred_h = pred[0]
+        
+    pred_mapped = [pred_a, pred_h]
+    return pred_mapped
 
 
 #################### STREAMLIT APP
@@ -180,11 +198,13 @@ with st.container():
             df['Model Output'] = pred_MODEL
 
             # Calculate game goal predictions (and actual)
-            pred_goals, real_goals, teams = calculate_game_goals(df_MODEL, pred_MODEL)
+            pred_goals, teams = calculate_game_goals(df_MODEL, pred_MODEL)
+            real_goals, teams_A_H = st.session_state.gameClient.get_real_goals()
+            pred_goals = map_teams(teams, teams_A_H, pred_goals)
             for i in range(len(teams)):
                 st.session_state.pred_goals[i] += pred_goals[i]
-                st.session_state.real_goals[i] += real_goals[i]
-            st.session_state.teams = teams
+                st.session_state.real_goals[i] = real_goals[i] #### !!!!
+            st.session_state.teams = teams_A_H
 
         else: 
             df = None
