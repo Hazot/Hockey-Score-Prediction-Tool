@@ -212,10 +212,15 @@ class FetchData:
         away = data["gameData"]["teams"]["away"]["triCode"]
         home = data["gameData"]["teams"]["home"]["triCode"]
 
-        real_goals = [goal_a, goal_h]
-        teams = [away, home]  
+        # Get away and home teams full name
+        away_full = data["gameData"]["teams"]["away"]["name"]
+        home_full = data["gameData"]["teams"]["home"]["name"]
 
-        return real_goals, teams
+        real_goals = [goal_a, goal_h]
+        teams = [away, home]
+        teams_full = [away_full, home_full]  
+
+        return real_goals, teams, teams_full
 
 
     def get_period_info(self, game_id: str):
