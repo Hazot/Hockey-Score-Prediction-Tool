@@ -156,23 +156,23 @@ st.write('')
               
 with st.container():
     # TODO: Add Game info and predictions
-    # st.write('STORED DF')
-    # st.write(st.session_state.stored_df)
+    st.write('STORED DF')
+    st.write(st.session_state.stored_df)
 
     st.header(f"Game goal predictions")
     if pred_button and st.session_state.model_downloaded:
         
         # Get dataframe of new events
         df_MODEL = st.session_state.gameClient.process_query(game_id, model_name=st.session_state.model) 
-        # st.write('DF_MODEL')
-        # st.write(df_MODEL)
+        st.write('DF_MODEL')
+        st.write(df_MODEL)
         
         # If there are new events: 
         if df_MODEL is not None: 
             # Make predictions on events 
             pred_MODEL = st.session_state.servingClient.predict(df_MODEL)
-            # st.write('PRED_MODEL')
-            # st.write(pred_MODEL)
+            st.write('PRED_MODEL')
+            st.write(pred_MODEL)
             
             df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features) 
             df = df.reset_index(drop=True)
@@ -217,8 +217,8 @@ with st.container():
         col1, col2 = st.columns(2)
         pred_goals_round = np.round(st.session_state.pred_goals, decimals=1)
 
-        delta1 = np.round(pred_goals_round[0] - st.session_state.real_goals[0], decimals=1)
-        delta2 = np.round(pred_goals_round[1] - st.session_state.real_goals[1], decimals=1)
+        delta1 = float(np.round(pred_goals_round[0] - st.session_state.real_goals[0], decimals=1))
+        delta2 = float(np.round(pred_goals_round[1] - st.session_state.real_goals[1], decimals=1))
         col1.metric(label=f"**{st.session_state.teams[0]}** xG (actual)", value=f"{pred_goals_round[0]} ({st.session_state.real_goals[0]})", delta=delta1)
         col2.metric(label=f"**{st.session_state.teams[1]}** xG (actual)", value=f"{pred_goals_round[1]} ({st.session_state.real_goals[1]})", delta=delta2)
 
