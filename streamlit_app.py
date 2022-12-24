@@ -156,23 +156,17 @@ st.write('')
               
 with st.container():
     # TODO: Add Game info and predictions
-    st.write('STORED DF')
-    st.write(st.session_state.stored_df)
 
     st.header(f"Game goal predictions")
     if pred_button and st.session_state.model_downloaded:
         
         # Get dataframe of new events
         df_MODEL = st.session_state.gameClient.process_query(game_id, model_name=st.session_state.model) 
-        st.write('DF_MODEL')
-        st.write(df_MODEL)
         
         # If there are new events: 
         if df_MODEL is not None: 
             # Make predictions on events 
             pred_MODEL = st.session_state.servingClient.predict(df_MODEL)
-            st.write('PRED_MODEL')
-            st.write(pred_MODEL)
             
             df = pd.DataFrame(df_MODEL, columns=st.session_state.servingClient.features) 
             df = df.reset_index(drop=True)
