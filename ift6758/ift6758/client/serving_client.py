@@ -35,8 +35,8 @@ class ServingClient:
         """
         logger.info("Pinging game")
         if X is not None:
-            logger.info(f"Input DataFrame shape: {X.shape}" )
             X = X.drop(columns=['isGoal', 'team'], errors='ignore')
+            logger.info(f"Input DataFrame shape: {X.shape}")
             X_dict = {}
             X_values = X.values.tolist()
             X_dict['values'] = X_values

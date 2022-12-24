@@ -27,7 +27,7 @@ matching_model = {
 config = {
     "DEBUG": True,          # some Flask specific configs
     "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
-    "CACHE_DEFAULT_TIMEOUT": 300
+    "CACHE_DEFAULT_TIMEOUT": 0
 }
 
 # Configure the flask app and the cache to save data accross requests
@@ -162,7 +162,8 @@ def predict():
     df = pd.json_normalize(r, list(r.keys())[0])
     app.logger.debug('Input DataFrame shape:' + str(df.shape))
     try:
-        preds = cache.get('model').predict_proba(df)[:, 1]
+        model = cache.get('model')
+        preds = model.predict_proba(df)[:, 1]
         app.logger.debug('Output prediction DataFrame shape:' + str(preds.shape))
         response = preds.tolist()
     except Exception as e:
