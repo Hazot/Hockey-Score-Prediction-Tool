@@ -8,5 +8,12 @@ tqdm
 lxml
 plotly
 setuptools
+flask
+gunicorn
+xgboost
 scikit-learn
+comet_ml
+jupyterlab
+ipywidgets
 streamlit
+flask-caching
