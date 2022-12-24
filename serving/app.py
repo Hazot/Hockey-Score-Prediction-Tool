@@ -1,7 +1,7 @@
 """
 If you are in the same directory as this file (app.py), you can run run the app using gunicorn:
     
-    $ gunicorn --bind 0.0.0.0:5000 app:app
+    $ gunicorn --bind 0.0.0.0:5000 app:app --timeout 600
 
 """
 import os
