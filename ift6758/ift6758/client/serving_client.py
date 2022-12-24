@@ -43,7 +43,7 @@ class ServingClient:
             pred = requests.post(url=self.base_url + "/predict", json=X_dict)
             try:
                 output = pred.json()
-                logger.info('Response DataFrame length: ' + str(len(output)))
+                logger.info('Response DataFrame obtained') # length: ' + str(len(output)))
                 return pd.DataFrame(output)
             except Exception as e:
                 logger.info("Error in prediction output: probably not the right input features for the model.")
