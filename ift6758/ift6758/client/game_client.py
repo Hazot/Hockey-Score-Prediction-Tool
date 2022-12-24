@@ -50,6 +50,8 @@ class GameClient:
         
         filtered = pd_make_df.full(df)
         
+        if len(filtered) == 0: return None
+        
         returned_df = pd_make_df.aug3(filtered, full_model)
         returned_df["team"] = filtered["teamTriCode"]
         
