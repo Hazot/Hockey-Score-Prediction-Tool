@@ -14,7 +14,7 @@ To close it simply do `ctrl+c` on the terminal or open another terminal and type
 ```
 docker-compose down
 ```
-Open `localhost:8892` or `0.0.0.0:8892`
+Open `localhost:8892` or `0.0.0.0:8892` in any browser.
 
 ## How to use
 
